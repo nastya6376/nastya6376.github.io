@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Интерактивная гитарная доска</title>
+    <title>Гитарная доска + Галерея</title>
     <style>
         * {
             box-sizing: border-box;
             user-select: none;
+            margin: 0;
+            padding: 0;
         }
 
         body {
@@ -18,14 +20,23 @@
             min-height: 100vh;
             margin: 0;
             font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            padding: 20px;
         }
 
+        .main-wrapper {
+            max-width: 1200px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        /* -------- ГИТАРА -------- */
         .guitar-container {
             background: #2d2d2d;
             padding: 30px 30px 40px;
             border-radius: 40px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
-            transition: all 0.2s;
         }
 
         .fretboard {
@@ -37,7 +48,6 @@
             border: 1px solid #3f3f3f;
         }
 
-        /* Сетка грифа */
         .fret-grid {
             display: grid;
             grid-template-columns: 60px repeat(12, 1fr);
@@ -45,7 +55,6 @@
             align-items: center;
         }
 
-        /* Блок струны (лейбл + лады) */
         .string-row {
             display: contents;
         }
@@ -85,7 +94,6 @@
             z-index: 2;
         }
 
-        /* Активные ноты (зажатые) */
         .fret-cell.active {
             background: #ffb347;
             background: radial-gradient(circle at 30% 30%, #ffb84d, #e07c1f);
@@ -97,18 +105,6 @@
             text-shadow: 0 0 6px rgba(255, 200, 100, 0.4);
         }
 
-        .fret-cell.active-note {
-            background: #ffb347;
-            background: radial-gradient(circle at 30% 30%, #ffb84d, #e07c1f);
-            color: #111;
-            font-weight: 700;
-            box-shadow: 0 0 16px #ffa726, inset 0 1px 0 #ffe082;
-            border-bottom: 1px solid #b86b1a;
-            transform: scale(0.98);
-            text-shadow: 0 0 6px rgba(255, 200, 100, 0.4);
-        }
-
-        /* Нулевой лад (открытая струна) */
         .fret-cell.open-string {
             background: #2e2e2e;
             color: #aaa;
@@ -121,7 +117,6 @@
             color: #111;
         }
 
-        /* Легенда и управление */
         .controls {
             display: flex;
             justify-content: space-between;
@@ -220,7 +215,190 @@
             color: #8a8a8a;
         }
 
-        /* адаптив */
+        /* -------- ГАЛЕРЕЯ -------- */
+        .gallery-container {
+            background: #2d2d2d;
+            border-radius: 40px;
+            padding: 25px 30px 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+        }
+
+        .gallery-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .gallery-title {
+            color: #ccc;
+            font-size: 1.1rem;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .gallery-title span {
+            background: #3d3d3d;
+            padding: 2px 14px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            color: #aaa;
+        }
+
+        .upload-btn {
+            background: #3d3d3d;
+            color: #ccc;
+            border: 1px solid #555;
+            padding: 8px 18px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .upload-btn:hover {
+            background: #4a4a4a;
+            border-color: #777;
+            color: #fff;
+        }
+
+        .upload-btn input {
+            display: none;
+        }
+
+        .slider-wrapper {
+            position: relative;
+            border-radius: 24px;
+            overflow: hidden;
+            background: #1a1a1a;
+            box-shadow: inset 0 0 30px #0a0a0a;
+        }
+
+        .slides-container {
+            display: flex;
+            transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            will-change: transform;
+        }
+
+        .slide {
+            min-width: 100%;
+            height: 380px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #1f1f1f;
+            color: #888;
+            font-size: 1.2rem;
+            position: relative;
+        }
+
+        .slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .slide-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            width: 100%;
+            height: 100%;
+            color: white;
+            font-size: 1.2rem;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .slide-placeholder .icon {
+            font-size: 5rem;
+            opacity: 0.9;
+        }
+
+        .slide-placeholder .label {
+            font-size: 1.4rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .slider-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            font-size: 1.8rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+            z-index: 10;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+
+        .slider-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-50%) scale(1.05);
+        }
+
+        .slider-btn:active {
+            transform: translateY(-50%) scale(0.92);
+        }
+
+        .slider-btn.prev {
+            left: 16px;
+        }
+
+        .slider-btn.next {
+            right: 16px;
+        }
+
+        .dots-container {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #3d3d3d;
+            cursor: pointer;
+            transition: 0.25s;
+            border: none;
+            padding: 0;
+        }
+
+        .dot:hover {
+            background: #5a5a5a;
+            transform: scale(1.15);
+        }
+
+        .dot.active {
+            background: #ffa726;
+            box-shadow: 0 0 14px #ffa72666;
+            transform: scale(1.2);
+        }
+
         @media (max-width: 700px) {
             .guitar-container {
                 padding: 16px;
@@ -252,88 +430,140 @@
             .action-buttons {
                 justify-content: center;
             }
+
+            .gallery-container {
+                padding: 16px;
+                border-radius: 24px;
+            }
+            .slide {
+                height: 220px;
+            }
+            .slider-btn {
+                width: 36px;
+                height: 36px;
+                font-size: 1.2rem;
+            }
+            .slider-btn.prev {
+                left: 8px;
+            }
+            .slider-btn.next {
+                right: 8px;
+            }
+            .dots-container {
+                gap: 8px;
+            }
+            .dot {
+                width: 10px;
+                height: 10px;
+            }
+            .gallery-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .upload-btn {
+                justify-content: center;
+            }
         }
     </style>
 </head>
 <body>
 
-<div class="guitar-container">
-    <div class="fretboard">
-        <div class="fret-grid" id="fretGrid">
-            <!-- Строки будут вставлены через JS -->
+<div class="main-wrapper">
+    <!-- ====== ГИТАРА ====== -->
+    <div class="guitar-container">
+        <div class="fretboard">
+            <div class="fret-grid" id="fretGrid">
+                <!-- Строки через JS -->
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="key-selector">
+                <label for="keySelect">🎵 Тональность</label>
+                <select id="keySelect">
+                    <option value="C">C (До)</option>
+                    <option value="C#">C# (До#)</option>
+                    <option value="D" selected>D (Ре)</option>
+                    <option value="D#">D# (Ре#)</option>
+                    <option value="E">E (Ми)</option>
+                    <option value="F">F (Фа)</option>
+                    <option value="F#">F# (Фа#)</option>
+                    <option value="G">G (Соль)</option>
+                    <option value="G#">G# (Соль#)</option>
+                    <option value="A">A (Ля)</option>
+                    <option value="A#">A# (Ля#)</option>
+                    <option value="B">B (Си)</option>
+                </select>
+            </div>
+            <div class="action-buttons">
+                <button id="clearBtn">✕ Очистить</button>
+                <button id="showChordBtn" class="btn-primary">♫ Показать аккорд</button>
+            </div>
+        </div>
+        <div class="footer-note">
+            <span>⚡ Нажмите на любой лад — подсветится нота. Двойной клик по грифу — показать аккорд.</span>
         </div>
     </div>
 
-    <div class="controls">
-        <div class="key-selector">
-            <label for="keySelect">🎵 Тональность</label>
-            <select id="keySelect">
-                <option value="C">C (До)</option>
-                <option value="C#">C# (До#)</option>
-                <option value="D" selected>D (Ре)</option>
-                <option value="D#">D# (Ре#)</option>
-                <option value="E">E (Ми)</option>
-                <option value="F">F (Фа)</option>
-                <option value="F#">F# (Фа#)</option>
-                <option value="G">G (Соль)</option>
-                <option value="G#">G# (Соль#)</option>
-                <option value="A">A (Ля)</option>
-                <option value="A#">A# (Ля#)</option>
-                <option value="B">B (Си)</option>
-            </select>
+    <!-- ====== ГАЛЕРЕЯ ====== -->
+    <div class="gallery-container">
+        <div class="gallery-header">
+            <div class="gallery-title">
+                🖼️ Галерея
+                <span id="slideCounter">0 / 0</span>
+            </div>
+            <label class="upload-btn">
+                📁 Добавить фото
+                <input type="file" id="imageUpload" accept="image/*" multiple>
+            </label>
         </div>
-        <div class="action-buttons">
-            <button id="clearBtn">✕ Очистить</button>
-            <button id="showChordBtn" class="btn-primary">♫ Показать аккорд</button>
+
+        <div class="slider-wrapper">
+            <div class="slides-container" id="slidesContainer">
+                <!-- Слайды через JS -->
+            </div>
+
+            <button class="slider-btn prev" id="prevBtn">‹</button>
+            <button class="slider-btn next" id="nextBtn">›</button>
         </div>
-    </div>
-    <div class="footer-note">
-        <span>⚡ Нажмите на любой лад — подсветится нота. Выберите тональность для подсказки.</span>
+
+        <div class="dots-container" id="dotsContainer">
+            <!-- Точки через JS -->
+        </div>
     </div>
 </div>
 
 <script>
+    // =====================================================
+    // 1. ГИТАРА
+    // =====================================================
     (function() {
-        // ------------------ НАСТРОЙКИ ГИТАРЫ ------------------
-        // 6 струн (от 1-й (высокой) до 6-й (низкой))
-        // Стандартный строй: E4 B3 G3 D3 A2 E2  (в полутонах от C)
-        // Отсчет от C: C=0, C#=1, D=2, D#=3, E=4, F=5, F#=6, G=7, G#=8, A=9, A#=10, B=11
-        const stringPitches = [4, 11, 7, 2, 9, 4]; // 1-я струна (E4) ... 6-я (E2)
-
-        // Маппинг нот для отображения
         const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-        const FRETS = 12;  // 12 ладов (нулевой + 11)
+        const stringPitches = [4, 11, 7, 2, 9, 4];
+        const FRETS = 12;
 
-        // DOM элементы
         const grid = document.getElementById('fretGrid');
         const keySelect = document.getElementById('keySelect');
         const clearBtn = document.getElementById('clearBtn');
         const showChordBtn = document.getElementById('showChordBtn');
 
-        // Состояние: какие лады зажаты (key = "stringIdx-fretIdx")
         const activeMap = new Map();
-
-        // Для хранения ссылок на ячейки
         const cellMap = new Map();
 
-        // ------------------ ПОСТРОЕНИЕ ГРИФА ------------------
         function buildFretboard() {
             grid.innerHTML = '';
             cellMap.clear();
 
-            // строки: 0 = 1-я струна (самая высокая), 5 = 6-я струна (бас)
             for (let s = 0; s < 6; s++) {
                 const rowDiv = document.createElement('div');
                 rowDiv.className = 'string-row';
 
-                // Лейбл струны (с названием ноты открытой)
                 const label = document.createElement('div');
                 label.className = 'string-label';
                 const openNote = noteNames[stringPitches[s] % 12];
                 label.textContent = `${openNote} (${s+1})`;
                 rowDiv.appendChild(label);
 
-                // Лады: от 0 (открытая) до FRETS-1
                 for (let f = 0; f <= FRETS; f++) {
                     const cell = document.createElement('div');
                     cell.className = 'fret-cell';
@@ -341,18 +571,15 @@
                         cell.classList.add('open-string');
                         cell.textContent = '○';
                     } else {
-                        // Показываем ноту на ладу (для справки)
                         const pitch = (stringPitches[s] + f) % 12;
                         cell.textContent = noteNames[pitch];
                     }
 
-                    // Сохраняем данные
                     const key = `${s}-${f}`;
                     cell.dataset.string = s;
                     cell.dataset.fret = f;
                     cell.dataset.key = key;
 
-                    // При клике — переключение активного состояния
                     cell.addEventListener('click', function(e) {
                         e.stopPropagation();
                         toggleFret(s, f);
@@ -361,34 +588,18 @@
                     rowDiv.appendChild(cell);
                     cellMap.set(key, cell);
                 }
-
                 grid.appendChild(rowDiv);
             }
 
-            // начальные активные (пример: аккорд D major)
-            // D major: 1-я струна (0) - открытая, 2-я струна (3 лад), 3-я струна (2 лад), 4-я открытая, 5-я открытая, 6-я бас (не зажимаем)
-            // для демонстрации: зажмем несколько нот
-            const demo = [
-                [0, 0],  // E
-                [1, 3],  // D
-                [2, 2],  // A
-                [3, 0],  // D
-                [4, 0],  // A
-                // [5, 0]   // E (бас) не зажимаем для D
-            ];
+            const demo = [[0, 0], [1, 3], [2, 2], [3, 0], [4, 0]];
             demo.forEach(([s, f]) => {
-                // но если мы хотим показать аккорд D, проверим что не выходим за пределы
-                if (s < 6 && f <= FRETS) {
-                    setActive(s, f, true);
-                }
+                if (s < 6 && f <= FRETS) setActive(s, f, true);
             });
         }
 
-        // ------------------ ЛОГИКА АКТИВАЦИИ ------------------
         function toggleFret(stringIdx, fretIdx) {
             const key = `${stringIdx}-${fretIdx}`;
-            const isActive = activeMap.has(key);
-            setActive(stringIdx, fretIdx, !isActive);
+            setActive(stringIdx, fretIdx, !activeMap.has(key));
         }
 
         function setActive(stringIdx, fretIdx, active) {
@@ -399,18 +610,12 @@
             if (active) {
                 activeMap.set(key, true);
                 cell.classList.add('active');
-                // Показываем название ноты с учетом тональности (для красоты)
                 const pitch = (stringPitches[stringIdx] + fretIdx) % 12;
                 const note = noteNames[pitch];
-                if (fretIdx === 0) {
-                    cell.textContent = `○ ${note}`;
-                } else {
-                    cell.textContent = note;
-                }
+                cell.textContent = fretIdx === 0 ? `○ ${note}` : note;
             } else {
                 activeMap.delete(key);
                 cell.classList.remove('active');
-                // Возвращаем стандартный текст
                 if (fretIdx === 0) {
                     cell.textContent = '○';
                 } else {
@@ -420,7 +625,6 @@
             }
         }
 
-        // Очистка всех активных
         function clearAllActive() {
             const keys = Array.from(activeMap.keys());
             keys.forEach(key => {
@@ -430,20 +634,11 @@
             activeMap.clear();
         }
 
-        // ------------------ ПОДСВЕТКА АККОРДА ПО ТОНАЛЬНОСТИ ------------------
-        // Показывает ноты, входящие в тональность (мажорная гамма)
         function highlightScale(rootIndex) {
-            // Мажорная гамма: тоны и полутоны: 2,2,1,2,2,2,1
             const scaleSteps = [0, 2, 4, 5, 7, 9, 11];
             const scaleNotes = scaleSteps.map(step => (rootIndex + step) % 12);
-
-            // Сначала снимаем все активные (но не очищаем карту, просто снимаем класс)
-            // Чтобы не потерять состояние — мы будем временно подсвечивать, но лучше использовать отдельный класс
-            // Но для простоты — используем тот же активный, но с доп. пометкой
-            // Очистим текущие активные, но запомним их? Лучше просто перезаписать.
             clearAllActive();
 
-            // Теперь зажжем все ноты, которые входят в гамму (на всех струнах)
             for (let s = 0; s < 6; s++) {
                 for (let f = 0; f <= FRETS; f++) {
                     const pitch = (stringPitches[s] + f) % 12;
@@ -454,7 +649,6 @@
             }
         }
 
-        // Показать аккорд по выбранной тональности (мажорный)
         function showChordFromKey() {
             const keyName = keySelect.value;
             const rootIndex = noteNames.indexOf(keyName);
@@ -462,37 +656,214 @@
             highlightScale(rootIndex);
         }
 
-        // ------------------ СОБЫТИЯ ------------------
         clearBtn.addEventListener('click', clearAllActive);
-
-        showChordBtn.addEventListener('click', function() {
-            showChordFromKey();
-        });
-
-        keySelect.addEventListener('change', function() {
-            // опционально: можно автоматически показывать аккорд при смене тональности
-            // но лучше по кнопке, чтобы пользователь сам решал
-            // однако можно подсветить подсказку:
-            // пока ничего не делаем
-        });
-
-        // дополнительно: по двойному клику на любой ячейке — показать аккорд текущей тональности
+        showChordBtn.addEventListener('click', showChordFromKey);
         document.addEventListener('dblclick', function(e) {
-            if (e.target.closest('.fret-cell')) {
-                showChordFromKey();
+            if (e.target.closest('.fret-cell')) showChordFromKey();
+        });
+
+        buildFretboard();
+        setTimeout(showChordFromKey, 50);
+    })();
+
+    // =====================================================
+    // 2. ГАЛЕРЕЯ с тремя реальными фото
+    // =====================================================
+    (function() {
+        // ТРИ РАБОЧИХ ССЫЛКИ НА ФОТОГРАФИИ (прямые ссылки)
+        const imageUrls = [
+            'https://yandex.ru/images/search?text=фото+гитары&img_url=https%3A%2F%2Fa.allegroimg.com%2Foriginal%2F1130c3%2Ff4559690468fa8a19795c013f0c4%2FAdmira-JUANITA-gitara-klasyczna-4-4-B-stock&pos=1&rpt=simage&stype=image&lr=2&parent-reqid=1788856894892383-2482025884492832731-balancer-l7leveler-kubr-yp-vla-108-BAL&source=serp',
+            '',
+            ''
+        ];
+
+        // Подписи к фото
+        const titles = ['Gibson Les Paul', 'Fender Stratocaster', 'Ibanez RG'];
+
+        let slides = [];
+        let currentSlide = 0;
+        
+        const slidesContainer = document.getElementById('slidesContainer');
+        const dotsContainer = document.getElementById('dotsContainer');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const slideCounter = document.getElementById('slideCounter');
+        const imageUpload = document.getElementById('imageUpload');
+
+        // Инициализация с тремя фотографиями
+        function initSlides() {
+            slides = imageUrls.map((url, index) => ({
+                type: 'image',
+                data: url,
+                title: titles[index] || `Фото ${index + 1}`
+            }));
+        }
+
+        function renderGallery() {
+            slidesContainer.innerHTML = '';
+            
+            if (slides.length === 0) {
+                const slide = document.createElement('div');
+                slide.className = 'slide';
+                slide.innerHTML = `
+                    <div class="slide-placeholder" style="background: #2a2a2a;">
+                        <div class="icon">📸</div>
+                        <div class="label">Нет фотографий</div>
+                        <div class="sub-label">Добавьте свои изображения</div>
+                    </div>
+                `;
+                slidesContainer.appendChild(slide);
+                dotsContainer.innerHTML = '';
+                slideCounter.textContent = '0 / 0';
+                return;
+            }
+
+            slides.forEach((slideData, index) => {
+                const slide = document.createElement('div');
+                slide.className = 'slide';
+
+                if (slideData.type === 'image') {
+                    const img = document.createElement('img');
+                    img.src = slideData.data;
+                    img.alt = slideData.title || `Фото ${index + 1}`;
+                    img.loading = 'lazy';
+                    
+                    // Если картинка не загрузилась - показываем заглушку
+                    img.onerror = function() {
+                        this.style.display = 'none';
+                        const placeholder = document.createElement('div');
+                        placeholder.className = 'slide-placeholder';
+                        placeholder.style.background = 'linear-gradient(135deg, #2a2a2a, #3a3a3a)';
+                        placeholder.innerHTML = `
+                            <div class="icon">🎸</div>
+                            <div class="label">${slideData.title || 'Фото не загрузилось'}</div>
+                            <div class="sub-label">Попробуйте обновить страницу</div>
+                        `;
+                        slide.appendChild(placeholder);
+                    };
+                    
+                    slide.appendChild(img);
+                }
+
+                slidesContainer.appendChild(slide);
+            });
+
+            // Точки
+            dotsContainer.innerHTML = '';
+            slides.forEach((_, index) => {
+                const dot = document.createElement('button');
+                dot.className = 'dot' + (index === currentSlide ? ' active' : '');
+                dot.dataset.index = index;
+                dot.addEventListener('click', () => goToSlide(index));
+                dotsContainer.appendChild(dot);
+            });
+
+            if (currentSlide >= slides.length) {
+                currentSlide = slides.length - 1;
+            }
+            if (currentSlide < 0) currentSlide = 0;
+            
+            goToSlide(currentSlide);
+            updateCounter();
+        }
+
+        function goToSlide(index) {
+            const total = slides.length;
+            if (total === 0) return;
+            if (index < 0) index = total - 1;
+            if (index >= total) index = 0;
+            currentSlide = index;
+
+            slidesContainer.style.transform = `translateX(-${currentSlide * 100}%)`;
+
+            document.querySelectorAll('.dot').forEach((dot, i) => {
+                dot.classList.toggle('active', i === currentSlide);
+            });
+
+            updateCounter();
+        }
+
+        function updateCounter() {
+            const total = slides.length;
+            if (total === 0) {
+                slideCounter.textContent = '0 / 0';
+                return;
+            }
+            slideCounter.textContent = `${currentSlide + 1} / ${total}`;
+        }
+
+        function nextSlide() {
+            if (slides.length === 0) return;
+            goToSlide(currentSlide + 1);
+        }
+
+        function prevSlide() {
+            if (slides.length === 0) return;
+            goToSlide(currentSlide - 1);
+        }
+
+        // Добавление пользовательских изображений
+        function addImages(files) {
+            const fileArray = Array.from(files);
+            const validFiles = fileArray.filter(file => file.type.startsWith('image/'));
+
+            if (validFiles.length === 0) {
+                alert('Пожалуйста, выберите изображения!');
+                return;
+            }
+
+            let loaded = 0;
+            validFiles.forEach((file) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    slides.push({
+                        type: 'image',
+                        data: e.target.result,
+                        title: file.name
+                    });
+                    loaded++;
+                    if (loaded === validFiles.length) {
+                        renderGallery();
+                        goToSlide(slides.length - 1);
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // События
+        prevBtn.addEventListener('click', prevSlide);
+        nextBtn.addEventListener('click', nextSlide);
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') prevSlide();
+            if (e.key === 'ArrowRight') nextSlide();
+        });
+
+        imageUpload.addEventListener('change', function(e) {
+            if (this.files.length > 0) {
+                addImages(this.files);
+                this.value = '';
             }
         });
 
-        // ------------------ ИНИЦИАЛИЗАЦИЯ ------------------
-        buildFretboard();
+        // Автопрокрутка
+        let autoplayInterval = setInterval(nextSlide, 5000);
+        const galleryContainer = document.querySelector('.gallery-container');
 
-        // По умолчанию покажем аккорд для выбранной тональности (D)
-        setTimeout(() => {
-            showChordFromKey();
-        }, 50);
+        galleryContainer.addEventListener('mouseenter', () => {
+            clearInterval(autoplayInterval);
+        });
+        galleryContainer.addEventListener('mouseleave', () => {
+            autoplayInterval = setInterval(nextSlide, 5000);
+        });
 
-        // Добавим небольшую подсказку при загрузке
-        console.log('Guitar fretboard ready! Double-click any fret to show chord of selected key.');
+        // Инициализация
+        initSlides();
+        renderGallery();
+        if (slides.length > 0) {
+            goToSlide(0);
+        }
     })();
 </script>
 </body>
