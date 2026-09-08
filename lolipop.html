@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Интерактивная гитарная доска</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            background: #1e1e1e;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+        }
+
+        .guitar-container {
+            background: #2d2d2d;
+            padding: 30px 30px 40px;
+            border-radius: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+            transition: all 0.2s;
+        }
+
+        .fretboard {
+            position: relative;
+            background: #1f1f1f;
+            border-radius: 28px;
+            padding: 24px 30px 20px 30px;
+            box-shadow: inset 0 0 20px #0a0a0a;
+            border: 1px solid #3f3f3f;
+        }
+
+        /* Сетка грифа */
+        .fret-grid {
+            display: grid;
+            grid-template-columns: 60px repeat(12, 1fr);
+            gap: 4px 0;
+            align-items: center;
+        }
+
+        /* Блок струны (лейбл + лады) */
+        .string-row {
+            display: contents;
+        }
+
+        .string-label {
+            color: #d4d4d4;
+            font-weight: 600;
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+            text-align: right;
+            padding-right: 16px;
+            text-shadow: 0 1px 2px black;
+            opacity: 0.8;
+        }
+
+        .fret-cell {
+            background: #262626;
+            height: 42px;
+            border-radius: 6px;
+            margin: 2px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #9e9e9e;
+            transition: 0.1s ease;
+            cursor: pointer;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 1px 2px rgba(0, 0, 0, 0.6);
+            border-bottom: 1px solid #383838;
+            position: relative;
+        }
+
+        .fret-cell:hover {
+            background: #333;
+            transform: scale(1.02);
+            z-index: 2;
+        }
+
+        /* Активные ноты (зажатые) */
+        .fret-cell.active {
+            background: #ffb347;
+            background: radial-gradient(circle at 30% 30%, #ffb84d, #e07c1f);
+            color: #111;
+            font-weight: 700;
+            box-shadow: 0 0 16px #ffa726, inset 0 1px 0 #ffe082;
+            border-bottom: 1px solid #b86b1a;
+            transform: scale(0.98);
+            text-shadow: 0 0 6px rgba(255, 200, 100, 0.4);
+        }
+
+        .fret-cell.active-note {
+            background: #ffb347;
+            background: radial-gradient(circle at 30% 30%, #ffb84d, #e07c1f);
+            color: #111;
+            font-weight: 700;
+            box-shadow: 0 0 16px #ffa726, inset 0 1px 0 #ffe082;
+            border-bottom: 1px solid #b86b1a;
+            transform: scale(0.98);
+            text-shadow: 0 0 6px rgba(255, 200, 100, 0.4);
+        }
+
+        /* Нулевой лад (открытая струна) */
+        .fret-cell.open-string {
+            background: #2e2e2e;
+            color: #aaa;
+            font-style: italic;
+        }
+
+        .fret-cell.open-string.active {
+            background: #ffb347;
+            background: radial-gradient(circle at 30% 30%, #ffb84d, #e07c1f);
+            color: #111;
+        }
+
+        /* Легенда и управление */
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 28px;
+            flex-wrap: wrap;
+            gap: 14px;
+        }
+
+        .key-selector {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: #222;
+            padding: 6px 18px 6px 20px;
+            border-radius: 50px;
+            border: 1px solid #3d3d3d;
+        }
+
+        .key-selector label {
+            color: #c0c0c0;
+            font-weight: 400;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+        }
+
+        .key-selector select {
+            background: #1a1a1a;
+            color: #eee;
+            border: 1px solid #444;
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .key-selector select:focus {
+            border-color: #ffa726;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .action-buttons button {
+            background: #333;
+            border: none;
+            color: #ddd;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.15s;
+            border: 1px solid #464646;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+            letter-spacing: 0.3px;
+        }
+
+        .action-buttons button:hover {
+            background: #3f3f3f;
+            color: white;
+            border-color: #5a5a5a;
+        }
+
+        .action-buttons button:active {
+            transform: scale(0.95);
+        }
+
+        .action-buttons .btn-primary {
+            background: #e07c1f;
+            border-color: #b86b1a;
+            color: #111;
+            font-weight: 600;
+        }
+
+        .action-buttons .btn-primary:hover {
+            background: #f08a2e;
+            border-color: #d47a22;
+        }
+
+        .footer-note {
+            margin-top: 16px;
+            color: #6b6b6b;
+            font-size: 0.75rem;
+            text-align: center;
+            letter-spacing: 0.3px;
+            border-top: 1px solid #2e2e2e;
+            padding-top: 16px;
+        }
+
+        .footer-note span {
+            color: #8a8a8a;
+        }
+
+        /* адаптив */
+        @media (max-width: 700px) {
+            .guitar-container {
+                padding: 16px;
+                border-radius: 24px;
+            }
+            .fretboard {
+                padding: 16px 10px;
+            }
+            .fret-grid {
+                grid-template-columns: 40px repeat(12, 1fr);
+                gap: 2px 0;
+            }
+            .string-label {
+                font-size: 0.75rem;
+                padding-right: 8px;
+            }
+            .fret-cell {
+                height: 32px;
+                font-size: 0.6rem;
+                border-radius: 4px;
+            }
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .key-selector {
+                justify-content: center;
+            }
+            .action-buttons {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="guitar-container">
+    <div class="fretboard">
+        <div class="fret-grid" id="fretGrid">
+            <!-- Строки будут вставлены через JS -->
+        </div>
+    </div>
+
+    <div class="controls">
+        <div class="key-selector">
+            <label for="keySelect">🎵 Тональность</label>
+            <select id="keySelect">
+                <option value="C">C (До)</option>
+                <option value="C#">C# (До#)</option>
+                <option value="D" selected>D (Ре)</option>
+                <option value="D#">D# (Ре#)</option>
+                <option value="E">E (Ми)</option>
+                <option value="F">F (Фа)</option>
+                <option value="F#">F# (Фа#)</option>
+                <option value="G">G (Соль)</option>
+                <option value="G#">G# (Соль#)</option>
+                <option value="A">A (Ля)</option>
+                <option value="A#">A# (Ля#)</option>
+                <option value="B">B (Си)</option>
+            </select>
+        </div>
+        <div class="action-buttons">
+            <button id="clearBtn">✕ Очистить</button>
+            <button id="showChordBtn" class="btn-primary">♫ Показать аккорд</button>
+        </div>
+    </div>
+    <div class="footer-note">
+        <span>⚡ Нажмите на любой лад — подсветится нота. Выберите тональность для подсказки.</span>
+    </div>
+</div>
+
+<script>
+    (function() {
+        // ------------------ НАСТРОЙКИ ГИТАРЫ ------------------
+        // 6 струн (от 1-й (высокой) до 6-й (низкой))
+        // Стандартный строй: E4 B3 G3 D3 A2 E2  (в полутонах от C)
+        // Отсчет от C: C=0, C#=1, D=2, D#=3, E=4, F=5, F#=6, G=7, G#=8, A=9, A#=10, B=11
+        const stringPitches = [4, 11, 7, 2, 9, 4]; // 1-я струна (E4) ... 6-я (E2)
+
+        // Маппинг нот для отображения
+        const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+        const FRETS = 12;  // 12 ладов (нулевой + 11)
+
+        // DOM элементы
+        const grid = document.getElementById('fretGrid');
+        const keySelect = document.getElementById('keySelect');
+        const clearBtn = document.getElementById('clearBtn');
+        const showChordBtn = document.getElementById('showChordBtn');
+
+        // Состояние: какие лады зажаты (key = "stringIdx-fretIdx")
+        const activeMap = new Map();
+
+        // Для хранения ссылок на ячейки
+        const cellMap = new Map();
+
+        // ------------------ ПОСТРОЕНИЕ ГРИФА ------------------
+        function buildFretboard() {
+            grid.innerHTML = '';
+            cellMap.clear();
+
+            // строки: 0 = 1-я струна (самая высокая), 5 = 6-я струна (бас)
+            for (let s = 0; s < 6; s++) {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'string-row';
+
+                // Лейбл струны (с названием ноты открытой)
+                const label = document.createElement('div');
+                label.className = 'string-label';
+                const openNote = noteNames[stringPitches[s] % 12];
+                label.textContent = `${openNote} (${s+1})`;
+                rowDiv.appendChild(label);
+
+                // Лады: от 0 (открытая) до FRETS-1
+                for (let f = 0; f <= FRETS; f++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'fret-cell';
+                    if (f === 0) {
+                        cell.classList.add('open-string');
+                        cell.textContent = '○';
+                    } else {
+                        // Показываем ноту на ладу (для справки)
+                        const pitch = (stringPitches[s] + f) % 12;
+                        cell.textContent = noteNames[pitch];
+                    }
+
+                    // Сохраняем данные
+                    const key = `${s}-${f}`;
+                    cell.dataset.string = s;
+                    cell.dataset.fret = f;
+                    cell.dataset.key = key;
+
+                    // При клике — переключение активного состояния
+                    cell.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        toggleFret(s, f);
+                    });
+
+                    rowDiv.appendChild(cell);
+                    cellMap.set(key, cell);
+                }
+
+                grid.appendChild(rowDiv);
+            }
+
+            // начальные активные (пример: аккорд D major)
+            // D major: 1-я струна (0) - открытая, 2-я струна (3 лад), 3-я струна (2 лад), 4-я открытая, 5-я открытая, 6-я бас (не зажимаем)
+            // для демонстрации: зажмем несколько нот
+            const demo = [
+                [0, 0],  // E
+                [1, 3],  // D
+                [2, 2],  // A
+                [3, 0],  // D
+                [4, 0],  // A
+                // [5, 0]   // E (бас) не зажимаем для D
+            ];
+            demo.forEach(([s, f]) => {
+                // но если мы хотим показать аккорд D, проверим что не выходим за пределы
+                if (s < 6 && f <= FRETS) {
+                    setActive(s, f, true);
+                }
+            });
+        }
+
+        // ------------------ ЛОГИКА АКТИВАЦИИ ------------------
+        function toggleFret(stringIdx, fretIdx) {
+            const key = `${stringIdx}-${fretIdx}`;
+            const isActive = activeMap.has(key);
+            setActive(stringIdx, fretIdx, !isActive);
+        }
+
+        function setActive(stringIdx, fretIdx, active) {
+            const key = `${stringIdx}-${fretIdx}`;
+            const cell = cellMap.get(key);
+            if (!cell) return;
+
+            if (active) {
+                activeMap.set(key, true);
+                cell.classList.add('active');
+                // Показываем название ноты с учетом тональности (для красоты)
+                const pitch = (stringPitches[stringIdx] + fretIdx) % 12;
+                const note = noteNames[pitch];
+                if (fretIdx === 0) {
+                    cell.textContent = `○ ${note}`;
+                } else {
+                    cell.textContent = note;
+                }
+            } else {
+                activeMap.delete(key);
+                cell.classList.remove('active');
+                // Возвращаем стандартный текст
+                if (fretIdx === 0) {
+                    cell.textContent = '○';
+                } else {
+                    const pitch = (stringPitches[stringIdx] + fretIdx) % 12;
+                    cell.textContent = noteNames[pitch];
+                }
+            }
+        }
+
+        // Очистка всех активных
+        function clearAllActive() {
+            const keys = Array.from(activeMap.keys());
+            keys.forEach(key => {
+                const [s, f] = key.split('-').map(Number);
+                setActive(s, f, false);
+            });
+            activeMap.clear();
+        }
+
+        // ------------------ ПОДСВЕТКА АККОРДА ПО ТОНАЛЬНОСТИ ------------------
+        // Показывает ноты, входящие в тональность (мажорная гамма)
+        function highlightScale(rootIndex) {
+            // Мажорная гамма: тоны и полутоны: 2,2,1,2,2,2,1
+            const scaleSteps = [0, 2, 4, 5, 7, 9, 11];
+            const scaleNotes = scaleSteps.map(step => (rootIndex + step) % 12);
+
+            // Сначала снимаем все активные (но не очищаем карту, просто снимаем класс)
+            // Чтобы не потерять состояние — мы будем временно подсвечивать, но лучше использовать отдельный класс
+            // Но для простоты — используем тот же активный, но с доп. пометкой
+            // Очистим текущие активные, но запомним их? Лучше просто перезаписать.
+            clearAllActive();
+
+            // Теперь зажжем все ноты, которые входят в гамму (на всех струнах)
+            for (let s = 0; s < 6; s++) {
+                for (let f = 0; f <= FRETS; f++) {
+                    const pitch = (stringPitches[s] + f) % 12;
+                    if (scaleNotes.includes(pitch)) {
+                        setActive(s, f, true);
+                    }
+                }
+            }
+        }
+
+        // Показать аккорд по выбранной тональности (мажорный)
+        function showChordFromKey() {
+            const keyName = keySelect.value;
+            const rootIndex = noteNames.indexOf(keyName);
+            if (rootIndex === -1) return;
+            highlightScale(rootIndex);
+        }
+
+        // ------------------ СОБЫТИЯ ------------------
+        clearBtn.addEventListener('click', clearAllActive);
+
+        showChordBtn.addEventListener('click', function() {
+            showChordFromKey();
+        });
+
+        keySelect.addEventListener('change', function() {
+            // опционально: можно автоматически показывать аккорд при смене тональности
+            // но лучше по кнопке, чтобы пользователь сам решал
+            // однако можно подсветить подсказку:
+            // пока ничего не делаем
+        });
+
+        // дополнительно: по двойному клику на любой ячейке — показать аккорд текущей тональности
+        document.addEventListener('dblclick', function(e) {
+            if (e.target.closest('.fret-cell')) {
+                showChordFromKey();
+            }
+        });
+
+        // ------------------ ИНИЦИАЛИЗАЦИЯ ------------------
+        buildFretboard();
+
+        // По умолчанию покажем аккорд для выбранной тональности (D)
+        setTimeout(() => {
+            showChordFromKey();
+        }, 50);
+
+        // Добавим небольшую подсказку при загрузке
+        console.log('Guitar fretboard ready! Double-click any fret to show chord of selected key.');
+    })();
+</script>
+</body>
+</html>
