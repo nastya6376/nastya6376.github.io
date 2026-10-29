@@ -1,0 +1,548 @@
+/* ===========================
+   Лабораторные страницы Supabase и Firebase
+   Тёмное стекло и фиолетовый акцент — в стиле главной страницы сайта
+   =========================== */
+
+:root {
+    /* Фон */
+    --bg-deep: #07070d;
+    --bg-mid: #0a0a12;
+    --bg-soft: #1a1a2e;
+
+    /* Поверхности */
+    --surface: rgba(255, 255, 255, 0.05);
+    --surface-raised: rgba(255, 255, 255, 0.08);
+    --field-bg: rgba(255, 255, 255, 0.04);
+
+    /* Границы */
+    --border: rgba(255, 255, 255, 0.1);
+    --border-strong: rgba(255, 255, 255, 0.18);
+
+    /* Текст */
+    --text: #f4f4fb;
+    --text-muted: #b0b0c4;
+
+    /* Акценты */
+    --accent: #a8a8ff;
+    --accent-vivid: #6c63ff;
+    --accent-solid: #5b52ea;
+    --accent-solid-deep: #3f3d9e;
+    --accent-solid-hover: #6d64ff;
+    --danger: #ff9b9b;
+    --success: #8ee6a8;
+    --warning: #ffd9a0;
+
+    /* Формы и движение */
+    --radius-lg: 20px;
+    --radius-md: 12px;
+    --radius-sm: 10px;
+    --shadow-card: 0 25px 50px rgba(0, 0, 0, 0.45);
+    --ease-out: cubic-bezier(0.2, 0, 0, 1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6;
+    color: var(--text);
+    min-height: 100vh;
+    padding: 40px 20px 64px;
+    background-color: var(--bg-deep);
+    background-image:
+        radial-gradient(900px 560px at 12% -10%, rgba(108, 99, 255, 0.22), transparent 62%),
+        radial-gradient(760px 480px at 90% 6%, rgba(63, 61, 158, 0.28), transparent 60%),
+        linear-gradient(135deg, var(--bg-mid) 0%, var(--bg-soft) 100%);
+    background-attachment: fixed;
+}
+
+/* ===========================
+   Сетка страницы
+   =========================== */
+.wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+    gap: 24px;
+    align-items: start;
+}
+
+.wrap > *:not(.card) {
+    grid-column: 1 / -1;
+}
+
+/* Форма остаётся на виду, пока листают список */
+.wrap > section.card:nth-of-type(1) {
+    position: sticky;
+    top: 24px;
+}
+
+/* Журнал изменений — во всю ширину */
+.wrap > section.card:nth-of-type(3) {
+    grid-column: 1 / -1;
+}
+
+@media (max-width: 900px) {
+    .wrap {
+        grid-template-columns: 1fr;
+    }
+
+    .wrap > section.card:nth-of-type(1) {
+        position: static;
+    }
+}
+
+/* ===========================
+   Навигация и заголовки
+   =========================== */
+.topbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 20px;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+.topbar a {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 6px 2px;
+    border-radius: var(--radius-sm);
+    transition: color 150ms ease-out;
+}
+
+.topbar span {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    color: var(--text-muted);
+}
+
+h1 {
+    font-size: clamp(1.75rem, 1.1rem + 2vw, 2.35rem);
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    margin-top: 8px;
+    background: linear-gradient(135deg, #ffffff, var(--accent));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: var(--text);
+    text-wrap: balance;
+}
+
+.subtitle {
+    color: var(--text-muted);
+    font-size: 0.98rem;
+    max-width: 62ch;
+    margin-top: -4px;
+    text-wrap: pretty;
+}
+
+.subtitle code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.88em;
+    color: var(--accent);
+    background: rgba(108, 99, 255, 0.16);
+    border: 1px solid rgba(168, 168, 255, 0.28);
+    border-radius: 6px;
+    padding: 1px 4px;
+    white-space: nowrap;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-family: inherit;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    vertical-align: middle;
+    padding: 5px 12px;
+    border-radius: 999px;
+    background: rgba(255, 155, 155, 0.12);
+    border: 1px solid rgba(255, 155, 155, 0.3);
+    color: var(--danger);
+    -webkit-text-fill-color: currentColor;
+}
+
+.badge::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.badge.is-on {
+    background: rgba(142, 230, 168, 0.12);
+    border-color: rgba(142, 230, 168, 0.32);
+    color: var(--success);
+}
+
+.badge.is-off {
+    background: rgba(255, 155, 155, 0.12);
+    border-color: rgba(255, 155, 155, 0.3);
+    color: var(--danger);
+}
+
+/* ===========================
+   Панели
+   =========================== */
+.card {
+    background: var(--surface);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    padding: 26px;
+    animation: rise 320ms var(--ease-out) both;
+}
+
+.card:nth-of-type(2) {
+    animation-delay: 80ms;
+}
+
+.card:nth-of-type(3) {
+    animation-delay: 160ms;
+}
+
+@keyframes rise {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .card {
+        animation: none;
+    }
+}
+
+.card h2 {
+    font-size: 1.12rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.card h2::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(168, 168, 255, 0.45), transparent);
+}
+
+/* ===========================
+   Форма
+   =========================== */
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    margin-bottom: 16px;
+}
+
+label {
+    font-size: 0.74rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+input[type="text"],
+input[type="number"] {
+    width: 100%;
+    min-height: 46px;
+    padding: 11px 14px;
+    font-size: 1rem;
+    font-family: inherit;
+    color: var(--text);
+    background: var(--field-bg);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-md);
+    transition: border-color 150ms ease-out, box-shadow 150ms ease-out;
+}
+
+input::placeholder {
+    color: #8b8b9e;
+}
+
+input:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.25);
+}
+
+/* Системные стрелки числового поля ломают тёмную тему */
+input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.card:nth-of-type(1) .row:first-of-type {
+    display: block;
+}
+
+.card:nth-of-type(1) .row > .field {
+    margin-bottom: 16px;
+}
+
+/* ===========================
+   Кнопки
+   =========================== */
+button {
+    min-height: 46px;
+    padding: 0 22px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    font-weight: 600;
+    color: #ffffff;
+    background: linear-gradient(135deg, var(--accent-solid), var(--accent-solid-deep));
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: filter 150ms ease-out, transform 150ms ease-out,
+        border-color 150ms ease-out;
+}
+
+button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+}
+
+button:disabled {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-muted);
+    cursor: not-allowed;
+    transform: none;
+    filter: none;
+}
+
+button:not(:disabled):active {
+    transform: scale(0.98);
+}
+
+@media (hover: hover) {
+    button:not(:disabled):hover {
+        filter: brightness(1.12);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    button:not(:disabled):active {
+        transform: none;
+    }
+}
+
+/* Вторичная кнопка — как ссылки на главной */
+#reloadBtn {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: var(--border-strong);
+    color: #e0e0ff;
+}
+
+@media (hover: hover) {
+    #reloadBtn:not(:disabled):hover {
+        background: rgba(108, 99, 255, 0.2);
+        border-color: var(--accent-vivid);
+        filter: none;
+    }
+}
+
+/* ===========================
+   Статус и предупреждения
+   =========================== */
+.status {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    min-height: 1.5em;
+    margin-top: 16px;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.status::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    flex: none;
+    transform: translateY(-2px);
+}
+
+.status.ok {
+    color: var(--success);
+}
+
+.status.error {
+    color: var(--danger);
+}
+
+.notice {
+    background: rgba(255, 217, 160, 0.1);
+    border: 1px solid rgba(255, 217, 160, 0.28);
+    border-left: 3px solid var(--warning);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    font-size: 0.92rem;
+    color: var(--warning);
+}
+
+.notice code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 1px 5px;
+    border-radius: 5px;
+}
+
+/* ===========================
+   Список и журнал
+   =========================== */
+.students {
+    list-style: none;
+    display: grid;
+    gap: 10px;
+}
+
+.students li {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 15px 16px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-md);
+}
+
+.student-name {
+    font-weight: 600;
+    color: var(--text);
+}
+
+.student-meta {
+    font-size: 0.86rem;
+    color: var(--text-muted);
+}
+
+.empty {
+    padding: 26px 18px;
+    text-align: center;
+    color: var(--text-muted);
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius-md);
+    font-size: 0.92rem;
+}
+
+/* Удаление — второстепенное действие, поэтому без заливки */
+.remove {
+    min-height: 0;
+    padding: 9px 14px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--danger);
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    flex: none;
+}
+
+@media (hover: hover) {
+    .remove:hover {
+        background: rgba(255, 155, 155, 0.1);
+        border-color: rgba(255, 155, 155, 0.28);
+        filter: none;
+    }
+}
+
+.remove:focus-visible {
+    outline: 2px solid var(--danger);
+    outline-offset: 2px;
+}
+
+#log .student-meta {
+    font-variant-numeric: tabular-nums;
+}
+
+/* ===========================
+   Узкие экраны
+   =========================== */
+@media (max-width: 560px) {
+    body {
+        padding: 24px 14px 48px;
+    }
+
+    .card {
+        padding: 20px;
+        border-radius: 16px;
+    }
+
+    .topbar {
+        justify-content: flex-start;
+    }
+
+    h1 {
+        font-size: 1.6rem;
+    }
+
+    button:not(.remove) {
+        width: 100%;
+    }
+
+    .row > button {
+        flex: 1 1 100%;
+    }
+
+    .students li {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .remove {
+        align-self: flex-start;
+    }
+}
