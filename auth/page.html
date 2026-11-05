@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase: Users</title>
+</head>
+<body>
+    <div class="wrap">
+        <nav class="topbar">
+            <a href="index.html">← На главную</a>
+            <span>
+                <a href="supabase.html">Supabase версия</a> ·
+                <a href="firebase-realtime.html">Realtime версия</a>
+            </span>
+        </nav>
+
+        <h1>Firebase: пользователи</h1>
+        <p class="subtitle">
+            Чтение (select) и добавление (insert) записей в Realtime Database,
+            узел <code>users</code>. Страница не перезагружается.
+        </p>
+
+        <div class="notice" id="configNotice" hidden></div>
+
+        <section class="card">
+            <h2>Добавить пользователя</h2>
+            <div class="row">
+                <div class="field">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" placeholder="sersres" autocomplete="off">
+                </div>
+                <div class="field">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" placeholder="sresre@mail.ru" autocomplete="off">
+                </div>
+            </div>
+            <div class="row" style="margin-top: 1rem;">
+                <button type="button" id="addBtn">Добавить пользователя</button>
+                <button type="button" id="reloadBtn">Обновить список</button>
+            </div>
+            <p class="status" id="status" role="status">Готово к работе</p>
+        </section>
+
+        <section class="card">
+            <h2>Список пользователей</h2>
+            <ul class="students" id="usersList"></ul>
+            <p class="empty" id="empty" hidden>Записей пока нет.</p>
+        </section>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
+        import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC2cs4y0BsyMa7ThAGtPNeun3OqmVVCORI",
+            authDomain: "name-702a7.firebaseapp.com",
+            databaseURL: "https://name-702a7-default-rtdb.firebaseio.com",
+            projectId: "name-702a7",
+            storageBucket: "name-702a7.firebasestorage.app",
+            messagingSenderId: "526462092208",
+            appId: "1:526462092208:web:af134aefbbcc56939d8c75"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const usersRef = ref(db, 'users');
+
+        const usernameInput = document.getElementById('username');
+        const emailInput = document.getElementById('email');
+        const addBtn = document.getElementById('addBtn');
+        const reloadBtn = document.getElementById('reloadBtn');
+        const usersList = document.getElementById('usersList');
+        const emptyNotice = document.getElementById('empty');
+        const statusText = document.getElementById('status');
+
+        let unsubscribe = null;
+
+        function loadUsers() {
+            statusText.textContent = "Загрузка списка пользователей...";
+
+            // Отписываемся от предыдущего слушателя, чтобы не дублировать
+            if (unsubscribe) unsubscribe();
+
+            unsubscribe = onValue(usersRef, (snapshot) => {
+                usersList.innerHTML = '';
+                const data = snapshot.val();
+
+                if (data) {
+                    emptyNotice.hidden = true;
+                    Object.keys(data).forEach((key) => {
+                        const user = data[key];
+                        const li = document.createElement('li');
+                        // textContent вместо innerHTML — защита от XSS
+                        const strong = document.createElement('strong');
+                        strong.textContent = user.username ?? '';
+                        const span = document.createElement('span');
+                        span.style.color = '#666';
+                        span.textContent = user.email ?? '';
+                        li.appendChild(strong);
+                        li.appendChild(document.createTextNode(' — '));
+                        li.appendChild(span);
+                        usersList.appendChild(li);
+                    });
+                    statusText.textContent = "Данные пользователей успешно обновлены";
+                } else {
+                    emptyNotice.hidden = false;
+                    statusText.textContent = "Пользователей пока нет";
+                }
+            }, (error) => {
+                console.error("Ошибка чтения данных:", error);
+                statusText.textContent = "Ошибка при загрузке данных: " + error.message;
+            });
+        }
+
+        addBtn.addEventListener('click', () => {
+            const username = usernameInput.value.trim();
+            const email = emailInput.value.trim();
+
+            if (!username || !email) {
+                statusText.textContent = "Пожалуйста, заполните Username и Email!";
+                return;
+            }
+
+            statusText.textContent = "Добавление...";
+
+            push(usersRef, { username, email })
+                .then(() => {
+                    statusText.textContent = "Пользователь успешно добавлен!";
+                    usernameInput.value = '';
+                    emailInput.value = '';
+                })
+                .catch((error) => {
+                    console.error("Ошибка при добавлении:", error);
+                    statusText.textContent = "Не удалось сохранить пользователя: " + error.message;
+                });
+        });
+
+        reloadBtn.addEventListener('click', () => {
+            loadUsers();
+        });
+
+        loadUsers();
+    </script>
+</body>
+</html>
