@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <!-- Блок профиля пользователя (аватарка и имя) -->
+    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+        <img id="user-avatar" src="" alt="Avatar" style="width: 50px; height: 50px; border-radius: 50%; display: none; object-fit: cover;">
+        <div id="user-info" style="font-size: 18px;">Загрузка...</div>
+    </div>
+
+    <!-- Блок кнопок входа (GitHub и Google) -->
+    <div id="login-buttons" style="display: none;">
+        <button id="github-login" style="padding: 10px 20px; font-size: 16px; cursor: pointer; margin-right: 10px;">
+            Войти через GitHub
+        </button>
+        <button id="google-login" style="padding: 10px 20px; font-size: 16px; cursor: pointer; background-color: #4285F4; color: white; border: none;">
+            Войти через Google
+        </button>
+    </div>
+
+    <!-- Кнопка выхода -->
+    <button id="github-logout" style="display: none; padding: 10px 20px; font-size: 16px; cursor: pointer; background-color: #f44336; color: white; border: none;">
+        Выйти
+    </button>
+
+    <script type="module">
+        // Импортируем Firebase SDK
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-analytics.js";
+        import { 
+            getAuth, 
+            signInWithPopup, 
+            GithubAuthProvider, 
+            GoogleAuthProvider, 
+            signOut, 
+            onAuthStateChanged 
+        } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-auth.js";
+      
+        // Конфигурация вашего проекта
+        const firebaseConfig = {
+          apiKey: "AIzaSyC2cs4y0BsyMa7ThAGtPNeun3OqmVVCORI",
+          authDomain: "name-702a7.firebaseapp.com",
+          databaseURL: "https://name-702a7-default-rtdb.firebaseio.com",
+          projectId: "name-702a7",
+          storageBucket: "name-702a7.firebasestorage.app",
+          messagingSenderId: "526462092208",
+          appId: "1:526462092208:web:af134aefbbcc56939d8c75",
+          measurementId: "G-NF43SETCLZ"
+        };
+      
+        // Инициализация
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const auth = getAuth(app);
+        
+        // Создаем провайдеры
+        const githubProvider = new GithubAuthProvider();
+        const googleProvider = new GoogleAuthProvider();
+
+        // Элементы интерфейса
+        const userInfo = document.getElementById('user-info');
+        const userAvatar = document.getElementById('user-avatar');
+        const loginButtons = document.getElementById('login-buttons');
+        const githubLoginBtn = document.getElementById('github-login');
+        const googleLoginBtn = document.getElementById('google-login');
+        const logoutButton = document.getElementById('github-logout');
+
+        // Слушатель состояния авторизации
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Извлекаем имя или используем первую часть почты
+                const fallbackName = user.email ? user.email.split('@')[0] : 'Пользователь';
+                const name = user.displayName || fallbackName;
+
+                userInfo.textContent = `Добро пожаловать, ${name}!`;
+                
+                // Проверяем наличие аватарки
+                if (user.photoURL) {
+                    userAvatar.src = user.photoURL;
+                    userAvatar.style.display = 'block';
+                } else {
+                    userAvatar.style.display = 'none';
+                }
+
+                loginButtons.style.display = 'none';
+                logoutButton.style.display = 'block';
+            } else {
+                userInfo.textContent = 'Вы не вошли в систему.';
+                userAvatar.style.display = 'none';
+                userAvatar.src = '';
+
+                loginButtons.style.display = 'block';
+                logoutButton.style.display = 'none';
+            }
+        });
+
+        // Вход через GitHub
+        githubLoginBtn.addEventListener('click', () => {
+            signInWithPopup(auth, githubProvider).catch(err => console.error("Ошибка входа через GitHub:", err));
+        });
+
+        // Вход через Google
+        googleLoginBtn.addEventListener('click', () => {
+            signInWithPopup(auth, googleProvider).catch(err => console.error("Ошибка входа через Google:", err));
+        });
+
+        // Выход из системы
+        logoutButton.addEventListener('click', () => {
+            signOut(auth).catch(err => console.error("Ошибка при выходе:", err));
+        });
+      </script>
+</body>
+</html>
