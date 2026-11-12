@@ -1,11 +1,21 @@
-// Публичная конфигурация Supabase.
-// Значения берутся в панели проекта: Project Settings -> API Keys.
-// Publishable key можно держать в репозитории, secret/service_role — нельзя.
+// ===========================
+// Конфигурация Supabase
+// ===========================
+// Откуда взять значения:
+//   1. Откройте проект на https://supabase.com/dashboard
+//   2. Project Settings -> API Keys
+//   3. Скопируйте Project URL и publishable (anon) key
+//
+// ВАЖНО: здесь допустим только публичный ключ (anon / publishable).
+// Ключ service_role нельзя вставлять в код сайта: он даёт полный доступ к базе.
 window.SUPABASE_CONFIG = {
-    url: 'https://ВАШ-ПРОЕКТ.supabase.co',
-    anonKey: 'ВАШ-ПУБЛИЧНЫЙ-КЛЮЧ'
+    url: 'https://lkndnxxwgqexlxkqupyv.supabase.co',
+    anonKey: 'sb_publishable_rjoP-kJaXyOPArjnIlKtMg_vkz0mhqx'
 };
 
+/**
+ * Проверяет, что конфигурация заменена на реальную.
+ */
 window.isSupabaseConfigured = function () {
     var config = window.SUPABASE_CONFIG || {};
     var url = config.url || '';
